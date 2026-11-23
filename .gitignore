@@ -1,0 +1,4 @@
+.venv/
+kakeibo.csv
+__pycache__/
+.pytest_cache/

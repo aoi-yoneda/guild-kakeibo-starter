@@ -1,13 +1,8 @@
-# 家計簿アプリ（AI駆動開発ギルドのスターター）
+# 家計簿
 
-AI駆動開発ギルドの作品づくり「家計簿アプリの土台をつくる」（ダンジョン 1〜3）のスターターです。
-ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
+収支を入れて、一覧と合計で見る Streamlit のアプリです。
 
-いまのタグは `kakeibo-base-02-done`（ダンジョン 2 の完成形）です。
-「追加」で収支を一覧に足し、収入・支出・残高の合計を出します。収支は kakeibo.csv に残るので、閉じて開き直しても戻ります。
-kakeibo.csv が無いときは、空の一覧から始まります。
-
-## 起動のしかた
+## 起動
 
 Python 3.10 以上で動きます（ギルドの教材では 3.12 を入れます）。
 
@@ -16,7 +11,7 @@ Windows（PowerShell）:
 ```powershell
 py -m venv .venv
 .venv\Scripts\activate
-pip install streamlit pandas
+pip install -r requirements.txt
 streamlit run app.py
 ```
 
@@ -25,7 +20,7 @@ Mac（ターミナル）:
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-pip install streamlit pandas
+pip install -r requirements.txt
 streamlit run app.py
 ```
 
@@ -34,14 +29,33 @@ streamlit run app.py
 Windows で `.venv\Scripts\activate` が「スクリプトの実行が無効」で止まるときは、`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` を 1 回打ってからやり直します。
 Windows で `streamlit run app.py` が止められるときは、代わりに `python -m streamlit run app.py` で起動します。
 
+## できること
+
+- 日付・区分（収入・支出）・金額・メモを入れて「追加」で一覧に足す
+- 収入・支出・残高の合計を出す
+- 閉じて開き直しても、収支が残る
+
+## データ
+
+収支は app.py と同じフォルダの kakeibo.csv（列は 日付,区分,金額,メモ、文字コードは utf-8）に残ります。
+kakeibo.csv は自分の本物のお金の記録なので、.gitignore に書いて GitHub には上げていません。無いときは空の一覧から始まります。
+
+見本で試すなら、sample.csv（作り物の 3 行）を kakeibo.csv にコピーしてから起動します。
+
+```powershell
+Copy-Item sample.csv kakeibo.csv   # Windows
+```
+
+```bash
+cp sample.csv kakeibo.csv   # Mac
+```
+
 ## 確かめ方
 
 1. 支出 1200 ランチ を追加する
 2. 収入 3000 フリマ を追加する
 3. ターミナルで Ctrl + C で止め、`streamlit run app.py` で起動し直す
-4. 一覧に 2 行が残り、収入 3,000 円・支出 1,200 円・残高 1,800 円になっていれば OK
-
-収支は app.py と同じフォルダの kakeibo.csv（列は 日付,区分,金額,メモ、文字コードは utf-8）に残ります。最初からやり直すときは kakeibo.csv を消します。
+4. 2 行が残り、合計が手で計算した数と同じなら OK
 
 ## テスト
 
@@ -52,12 +66,17 @@ pip install pytest
 python -m pytest
 ```
 
-tests/ のテストは、Streamlit の AppTest で app.py を動かし、入力欄の決まり・合計が手計算と合うこと・開き直しても収支が残ることを確かめます。storage.py の読み書きも確かめます。
+tests/ のテストは、Streamlit の AppTest で app.py を動かし、入力欄の決まり・合計が手計算と合うこと・開き直しても収支が残ることを確かめます。storage.py の読み書きと、上げないファイルが .gitignore にあることも確かめます。
 テストは一時フォルダの CSV を使うので、自分の kakeibo.csv は書き換えません。
 Python 3.10・3.12・3.14 で確かめました（Streamlit 1.65〜1.67）。
-tests/ はスターターのものです。自分の GitHub に上げても、消してもかまいません。この README は、ダンジョン 3 のクエスト 2 で自分の家計簿の README に書き換えます。
 
-## タグの一覧
+## このリポジトリについて（ギルドのスターター）
+
+AI駆動開発ギルドの作品づくり「家計簿アプリの土台をつくる」（ダンジョン 1〜3）のスターターです。
+ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
+main と `kakeibo-base-03-done`（ダンジョン 3 の完成形）は同じ中身です。
+
+### タグの一覧
 
 | タグ | 地点 | 入っているもの |
 | --- | --- | --- |
@@ -66,7 +85,7 @@ tests/ はスターターのものです。自分の GitHub に上げても、�
 | `kakeibo-base-02-done` | ダンジョン 2 の完成形（追加・合計・CSV に保存） | app.py・storage.py・tests/ |
 | `kakeibo-base-03-done` | ダンジョン 3 の完成形（GitHub に上げる形） | 上に加えて requirements.txt・.gitignore・sample.csv |
 
-## 始めるダンジョンと使うタグ
+### 始めるダンジョンと使うタグ
 
 | 始めるダンジョン | 使うタグ |
 | --- | --- |
@@ -74,7 +93,7 @@ tests/ はスターターのものです。自分の GitHub に上げても、�
 | ダンジョン 2「家計簿を動く形にする」 | `kakeibo-base-01-done` |
 | ダンジョン 3「家計簿を GitHub に上げる」 | `kakeibo-base-02-done` |
 
-## 途中から入る
+### 途中から入る
 
 使うタグを選んで、`kakeibo` という名前のフォルダに clone します。下の例はダンジョン 2 から始めるとき（`kakeibo-base-01-done`）です。
 
@@ -98,7 +117,7 @@ clone のときに `detached HEAD` の長い注意が出ますが、タグを取
 `.git` を消すのは、このフォルダを自分の家計簿として育てるためです。消さないと、ダンジョン 3 で `git push` したときの上げ先がこのスターターのままになります。
 Git を使わずに取るなら、GitHub の画面でタグを選び、Code → Download ZIP でも同じものが手に入ります。
 
-## 自分のコードと比べる
+### 自分のコードと比べる
 
 ダンジョンを終えたら、そのダンジョンの完成形のタグと見比べられます。ダンジョンの間の差分は GitHub の比較の画面で見られます。
 
