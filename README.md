@@ -3,8 +3,47 @@
 AI駆動開発ギルドの作品づくり「家計簿アプリの土台をつくる」（ダンジョン 1〜3）のスターターです。
 ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
 
-いまのタグは `kakeibo-base-01-start`（ダンジョン 1 を始める前）です。まだアプリは入っていません。
-ダンジョン 1 の「準備: 家計簿のフォルダと Streamlit」から進めてください。
+いまのタグは `kakeibo-base-01-done`（ダンジョン 1 の完成形）です。
+日付・区分・金額・メモの入力欄と、見本の 3 行の一覧が出ます。「追加」を押すと、入れた値を画面に出します（一覧に足すのはダンジョン 2）。
+
+## 起動のしかた
+
+Python 3.10 以上で動きます（ギルドの教材では 3.12 を入れます）。
+
+Windows（PowerShell）:
+
+```powershell
+py -m venv .venv
+.venv\Scripts\activate
+pip install streamlit pandas
+streamlit run app.py
+```
+
+Mac（ターミナル）:
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+pip install streamlit pandas
+streamlit run app.py
+```
+
+初めて起動すると、ターミナルで Email を聞かれます。空のまま Enter を押せば進みます。
+ブラウザで http://localhost:8501 が開き、「家計簿」の画面が出ます。止めるときはターミナルで Ctrl + C。
+Windows で `.venv\Scripts\activate` が「スクリプトの実行が無効」で止まるときは、`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` を 1 回打ってからやり直します。
+Windows で `streamlit run app.py` が止められるときは、代わりに `python -m streamlit run app.py` で起動します。
+
+## テスト
+
+`.venv` を有効にしたまま、pytest を入れて回します。Windows では `pytest` だけだとアプリ制御で止められることがあるので、`python -m pytest` で回します。
+
+```bash
+pip install pytest
+python -m pytest
+```
+
+tests/ のテストは、Streamlit の AppTest で app.py を動かし、入力欄の決まり（区分は 2 つから選ぶ・金額は 1 以上の整数）と、一覧の金額が数になっていることを確かめます。
+Python 3.10・3.12・3.14 で確かめました（Streamlit 1.65〜1.67）。
 
 ## タグの一覧
 
