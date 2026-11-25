@@ -10,8 +10,14 @@ import storage  # noqa: E402
 
 
 @pytest.fixture(autouse=True)
-def csv_path(tmp_path, monkeypatch):
-    """テストでは本物の kakeibo.csv を使わず、一時フォルダの CSV に読み書きする"""
-    path = tmp_path / "kakeibo.csv"
+def db_path(tmp_path, monkeypatch):
+    """テストでは本物の kakeibo.db・kakeibo.csv を使わず、一時フォルダのものに読み書きする"""
+    path = tmp_path / "kakeibo.db"
     monkeypatch.setattr(storage, "PATH", path)
+    monkeypatch.setattr(storage, "CSV_PATH", tmp_path / "kakeibo.csv")
     return path
+
+
+@pytest.fixture
+def csv_path(tmp_path):
+    return tmp_path / "kakeibo.csv"

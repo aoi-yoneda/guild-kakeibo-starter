@@ -1,4 +1,5 @@
 .venv/
 kakeibo.csv
+kakeibo.db
 __pycache__/
 .pytest_cache/
