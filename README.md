@@ -34,7 +34,11 @@ Windows で `streamlit run app.py` が止められるときは、代わりに `p
 - 日付・区分（収入・支出）・金額・メモ・カテゴリを入れて「追加」で一覧に足す
 - 収入・支出・残高の合計を出す
 - 「直す・消す」で、id を選んだ 1 行だけを直す・消す
+- 「外貨の支出を入れる」で、ドルなどの金額をその日の為替レートで円にして足す
+- 一覧の日付に祝日の印を付け、今月の祝日を出す
 - 閉じて開き直しても、収支が残る
+
+為替と祝日はネットの API から取ります（どちらも登録・キーは要りません）。取れないときも画面は止まらず、円の欄から入れられます。
 
 ## データ
 
@@ -56,6 +60,20 @@ Copy-Item sample.csv kakeibo.csv   # Windows
 cp sample.csv kakeibo.csv   # Mac
 ```
 
+## 使っている API
+
+| 用途 | API | 呼ぶ URL の例 |
+| --- | --- | --- |
+| 為替レート（rates.py） | [Frankfurter](https://frankfurter.dev/)（欧州中央銀行の参考レート。無料・キー不要） | `https://api.frankfurter.dev/v2/rates?base=USD&quotes=JPY&date=2026-11-20&providers=ECB` |
+| 祝日（holidays.py） | [holidays-jp](https://holidays-jp.github.io/)（日本の祝日。無料・キー不要） | `https://holidays-jp.github.io/api/v1/2026/date.json` |
+
+- 為替は、土日などレートの出ない日を頼むと、その前の営業日のレートが返ります。メモに使ったレートの日付を残します
+- 同じ通貨・日付のレートは 1 時間、祝日は 1 日、覚えておいて呼び直しません
+- レートは参考の値です。カードの明細の円の金額とは少しずれます
+- 円にすると 1 円より少ない金額（少しの韓国ウォンなど）は入れません
+- 祝日を取れなかった年は、画面を開いている間は呼び直しません。起動し直すと、もう一度試します
+- 為替の返事が思っていた形でないとき（リストの中に rate が無いなど）の備えは、まだ入れていません。品質とリファクタのトラック（品質のダンジョン 4）で、偽物の通信を使うテストと一緒に足します
+
 ## 確かめ方
 
 1. 支出 1200 ランチ を追加する
@@ -63,6 +81,7 @@ cp sample.csv kakeibo.csv   # Mac
 3. 「直す・消す」でランチの行の id を選び、金額を 1500 にして「直す」を押す
 4. ターミナルで Ctrl + C で止め、`streamlit run app.py` で起動し直す
 5. 2 行が残り、ランチが 1500 円になっていて、合計が手で計算した数と同じなら OK
+6. 「外貨の支出を入れる」で 12.50 USD を足し、メモのレートを掛けた円の金額で一覧に入れば OK。祝日の日付の行には「祝日」の列に名前が出る
 
 ## テスト
 
@@ -75,14 +94,15 @@ python -m pytest
 
 tests/ のテストは、Streamlit の AppTest で app.py を動かし、入力欄の決まり・合計が手計算と合うこと・開き直しても収支が残ること・選んだ 1 行だけが直る・消えることを確かめます。
 storage.py では、' の入ったメモもそのまま入ること、kakeibo.csv の取り込みが 1 回だけなこと・読めない CSV では kakeibo.db を残さないこと、カテゴリ列の無い古い kakeibo.db に列が足されることも確かめます。上げないファイルが .gitignore にあることも確かめます。
-テストは一時フォルダの kakeibo.db を使うので、自分の kakeibo.db は書き換えません。
+為替と祝日は、ネットにつながらないときに画面が止まらず円で入れられること、レートを取れたら円にして保存すること、祝日の印と今月分への絞り込みを確かめます。
+テストは一時フォルダの kakeibo.db を使うので、自分の kakeibo.db は書き換えません。テストは外のネットに出ません（requests.get を塞いでいます）。
 Python 3.10・3.12・3.14 で確かめました（Streamlit 1.65〜1.67）。
 
 ## このリポジトリについて（ギルドのスターター）
 
-AI駆動開発ギルドの作品づくり「家計簿アプリをつくる」のスターターです。「家計簿アプリの土台をつくる」（ダンジョン 1〜3）と、「データと外部連携」の家計簿の続き（ダンジョン 1）のタグがあります。
+AI駆動開発ギルドの作品づくり「家計簿アプリをつくる」のスターターです。「家計簿アプリの土台をつくる」（ダンジョン 1〜3）と、「データと外部連携」の家計簿の続き（ダンジョン 1・2）のタグがあります。
 ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
-main と `data-01-done`（データと外部連携 ダンジョン 1 の完成形）は同じ中身です。
+main と `data-02-done`（データと外部連携 ダンジョン 2 の完成形）は同じ中身です。
 
 ### タグの一覧
 
@@ -93,6 +113,7 @@ main と `data-01-done`（データと外部連携 ダンジョン 1 の完成�
 | `kakeibo-base-02-done` | ダンジョン 2 の完成形（追加・合計・CSV に保存） | app.py・storage.py・tests/ |
 | `kakeibo-base-03-done` | ダンジョン 3 の完成形（GitHub に上げる形） | 上に加えて requirements.txt・.gitignore・sample.csv |
 | `data-01-done` | データと外部連携 ダンジョン 1 の完成形（保存先を SQLite に。追加・一覧・直す・消す・カテゴリ） | storage.py が SQLite（kakeibo.db の records 表）。.gitignore に kakeibo.db |
+| `data-02-done` | データと外部連携 ダンジョン 2 の完成形（外貨を円にして保存・祝日の印） | 上に加えて rates.py・holidays.py。requirements.txt に requests |
 
 ### 始めるダンジョンと使うタグ
 
@@ -102,6 +123,7 @@ main と `data-01-done`（データと外部連携 ダンジョン 1 の完成�
 | ダンジョン 2「家計簿を動く形にする」 | `kakeibo-base-01-done` |
 | ダンジョン 3「家計簿を GitHub に上げる」 | `kakeibo-base-02-done` |
 | データと外部連携 ダンジョン 1「データを残す SQLite と CRUD」 | `kakeibo-base-03-done` |
+| データと外部連携 ダンジョン 2「外の API からデータを取る」 | `data-01-done` |
 
 ### 途中から入る
 
@@ -136,5 +158,6 @@ Git を使わずに取るなら、GitHub の画面でタグを選び、Code → 
 - ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/kakeibo-base-01-done...kakeibo-base-02-done
 - ダンジョン 3: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/kakeibo-base-02-done...kakeibo-base-03-done
 - データと外部連携 ダンジョン 1: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/kakeibo-base-03-done...data-01-done
+- データと外部連携 ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/data-01-done...data-02-done
 
 完成形はひとつの答えの例です。自分のコードが違っていても、ダンジョンのクリア条件を満たしていれば大丈夫です。

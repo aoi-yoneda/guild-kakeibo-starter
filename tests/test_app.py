@@ -1,7 +1,10 @@
+from datetime import date
 from pathlib import Path
 
 from streamlit.testing.v1 import AppTest
 
+import holidays
+import rates
 import storage
 from test_storage import add_sample
 
@@ -79,8 +82,8 @@ def test_added_rows_survive_restart():
 def test_edit_changes_only_the_chosen_row():
     add_sample()
     at = run_app()
-    at.selectbox[1].set_value(2).run()
-    at.number_input[1].set_value(1500)
+    at.selectbox(key="target").set_value(2).run()
+    at.number_input(key="a2").set_value(1500)
     edit_button(at, "直す").click().run()
     assert not at.exception
     assert metrics(at) == {"収入": "200,000 円", "支出": "5,300 円", "残高": "194,700 円"}
@@ -90,7 +93,7 @@ def test_edit_changes_only_the_chosen_row():
 def test_delete_removes_only_the_chosen_row():
     add_sample()
     at = run_app()
-    at.selectbox[1].set_value(3).run()
+    at.selectbox(key="target").set_value(3).run()
     edit_button(at, "消す").click().run()
     assert not at.exception
     assert [r["メモ"] for r in storage.load_records()] == ["給料", "ランチ"]
@@ -104,3 +107,87 @@ def test_broken_csv_shows_error_instead_of_crashing(csv_path, db_path):
     assert not at.exception
     assert "kakeibo.csv の 2 行目を読めませんでした" in at.error[0].value
     assert not db_path.exists()
+
+
+def add_foreign(at, currency, amount, memo):
+    at.selectbox(key="f_currency").set_value(currency)
+    at.number_input(key="f_amount").set_value(amount)
+    at.text_input(key="f_memo").set_value(memo)
+    at.button(key="FormSubmitter:foreign-円にして追加").click().run()
+    assert not at.exception
+
+
+def test_without_network_the_screen_still_works():
+    # conftest で外のネットを塞いでいる。為替も祝日も取れない
+    at = run_app()
+    assert "祝日の印を付けられませんでした" in at.warning[0].value
+    add_foreign(at, "USD", 12.5, "本")
+    assert "上の欄に円で入れてください" in at.error[0].value
+    assert storage.load_records() == []
+    # 円の欄からは入れられる
+    add(at, "支出", 1940, "本")
+    assert metrics(at) == {"収入": "0 円", "支出": "1,940 円", "残高": "-1,940 円"}
+
+
+def test_foreign_amount_is_saved_in_yen(monkeypatch):
+    calls = []
+
+    def fake_rate(currency, day):
+        calls.append((currency, day))
+        return 155.12, "2026-11-20"
+
+    monkeypatch.setattr(rates, "fetch_rate", fake_rate)
+    at = run_app()
+    add_foreign(at, "USD", 12.5, "本")
+    record = storage.load_records()[0]
+    assert record["金額"] == 1939
+    assert record["区分"] == "支出"
+    assert record["メモ"] == "本（12.50 USD・2026-11-20 のレート 155.12）"
+    # 同じ通貨・日付は覚えておき、呼び直さない
+    add_foreign(at, "USD", 3, "コーヒー")
+    assert len(calls) == 1
+
+
+def test_holidays_are_marked_in_the_list(monkeypatch):
+    monkeypatch.setattr(
+        holidays, "fetch_holidays", lambda year: {"2026-11-23": "勤労感謝の日"}
+    )
+    storage.init_db()
+    storage.add_record("2026-11-23", "支出", 800, "ランチ")
+    storage.add_record("2026-11-24", "支出", 300, "コーヒー")
+    at = run_app()
+    assert not at.warning
+    assert at.dataframe[0].value["祝日"].tolist() == ["勤労感謝の日", ""]
+
+
+def test_amount_below_one_yen_is_not_saved_and_edit_still_opens(monkeypatch):
+    monkeypatch.setattr(rates, "fetch_rate", lambda currency, day: (0.1047, "2026-11-20"))
+    storage.init_db()
+    storage.add_record("2026-11-20", "支出", 500, "ランチ")
+    at = run_app()
+    add_foreign(at, "KRW", 3, "ガム")
+    assert "1 円より少ない" in at.error[0].value
+    assert [r["メモ"] for r in storage.load_records()] == ["ランチ"]
+    # 一覧と「直す・消す」はそのまま開く
+    again = run_app()
+    assert again.number_input(key="a1").value == 500
+
+
+def test_failed_holiday_year_is_not_called_again_but_this_month_is_shown(monkeypatch):
+    this_year = date.today().year
+    calls = []
+
+    def fake_holidays(year):
+        calls.append(year)
+        if year != this_year:
+            raise holidays.HolidayError(f"{year} 年の祝日を取れませんでした（404）")
+        return {}
+
+    monkeypatch.setattr(holidays, "fetch_holidays", fake_holidays)
+    storage.init_db()
+    storage.add_record("2015-01-01", "支出", 800, "初詣")
+    at = run_app()
+    assert "2015 年の祝日を取れませんでした" in at.warning[0].value
+    assert at.caption[-1].value == "今月の祝日: なし"
+    add(at, "支出", 300, "コーヒー")
+    assert calls.count(2015) == 1

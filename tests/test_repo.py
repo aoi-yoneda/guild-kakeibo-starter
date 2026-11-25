@@ -14,7 +14,7 @@ def test_gitignore_keeps_out_venv_and_real_data():
 
 def test_requirements_are_only_what_the_app_uses():
     lines = (ROOT / "requirements.txt").read_text(encoding="utf-8").split()
-    assert lines == ["streamlit", "pandas"]
+    assert lines == ["streamlit", "pandas", "requests"]
 
 
 def test_sample_csv_is_imported_into_new_db(csv_path):
