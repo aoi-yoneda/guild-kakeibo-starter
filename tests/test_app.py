@@ -38,7 +38,7 @@ def edit_button(at, label):
 
 def test_inputs_follow_the_rules():
     at = run_app()
-    assert at.title[0].value == "家計簿"
+    assert at.title[0].value == "うちの家計簿（残高 0 円）"
     assert at.date_input[0].label == "日付"
     assert at.radio[0].options == ["収入", "支出"]
     assert at.number_input[0].min == 1
@@ -212,3 +212,14 @@ def test_memo_inputs_stop_at_100_characters():
     for key in [None, "f_memo", "m3"]:
         box = at.text_input[0] if key is None else at.text_input(key=key)
         assert box.max_chars == storage.MEMO_MAX == 100
+
+
+def test_heading_shows_whole_balance_even_when_month_is_chosen():
+    add_sample()
+    storage.add_record("2026-10-31", "支出", 500, "本")
+    at = run_app()
+    assert at.title[0].value == "うちの家計簿（残高 194,500 円）"
+    at.selectbox(key="month").set_value("2026-10").run()
+    assert at.title[0].value == "うちの家計簿（残高 194,500 円）"
+    add(at, "支出", 500, "コーヒー")
+    assert at.title[0].value == "うちの家計簿（残高 194,000 円）"

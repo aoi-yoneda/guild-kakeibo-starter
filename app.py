@@ -19,7 +19,8 @@ def cached_holidays(year):
     return holidays.fetch_holidays(year)
 
 
-st.title("家計簿")
+# 見出しには全体の残高を出す。残高は収支を読んだあとで分かるので、場所だけ先に取っておく
+heading = st.empty()
 st.write("収支を入れて、一覧と合計で見るアプリです")
 
 # kakeibo.db が無ければ作る（kakeibo.csv があれば、そのときだけ取り込む）
@@ -123,6 +124,8 @@ if records:
         records = storage.load_records()
 else:
     st.caption("まだ収支がありません")
+
+heading.title(f"うちの家計簿（残高 {summarize(records)[2]:,} 円）")
 
 # 月で絞ると、合計と一覧の両方がその月だけになる
 month = st.selectbox("月", ["すべて"] + months(records), key="month")
