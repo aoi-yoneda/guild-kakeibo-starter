@@ -8,3 +8,13 @@ def summarize(records):
         else:
             expense += r["金額"]
     return income, expense, income - expense
+
+
+def months(records):
+    """収支のある月（"2026-11" の形）を、新しい月から返す"""
+    return sorted({r["日付"][:7] for r in records}, reverse=True)
+
+
+def in_month(records, month):
+    """"2026-11" の形の月の行だけを返す。並びは変えない"""
+    return [r for r in records if r["日付"][:7] == month]

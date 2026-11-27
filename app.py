@@ -5,7 +5,7 @@ import streamlit as st
 import holidays
 import rates
 import storage
-from summary import summarize
+from summary import in_month, months, summarize
 
 
 # 同じ通貨・日付なら 1 時間は呼び直さない（失敗したときは覚えないので、次にまた呼ぶ）
@@ -121,7 +121,10 @@ if records:
 else:
     st.caption("まだ収支がありません")
 
-income, expense, balance = summarize(records)
+# 月で絞ると、合計と一覧の両方がその月だけになる
+month = st.selectbox("月", ["すべて"] + months(records), key="month")
+shown = records if month == "すべて" else in_month(records, month)
+income, expense, balance = summarize(shown)
 
 col1, col2, col3 = st.columns(3)
 col1.metric("収入", f"{income:,} 円")
@@ -155,4 +158,4 @@ if got_this_year:
         )
     else:
         st.caption("今月の祝日: なし")
-st.dataframe([dict(r, 祝日=holidays.mark(r["日付"], holiday_names)) for r in records])
+st.dataframe([dict(r, 祝日=holidays.mark(r["日付"], holiday_names)) for r in shown])

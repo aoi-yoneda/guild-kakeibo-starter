@@ -33,6 +33,7 @@ Windows で `streamlit run app.py` が止められるときは、代わりに `p
 
 - 日付・区分（収入・支出）・金額・メモ・カテゴリを入れて「追加」で一覧に足す
 - 収入・支出・残高の合計を出す
+- 「月」を選ぶと、合計と一覧がその月だけになる（「すべて」で全部）
 - 一覧は新しい日付が上（同じ日付なら、あとから入れた行が上）
 - 「直す・消す」で、id を選んだ 1 行だけを直す・消す
 - 「外貨の支出を入れる」で、ドルなどの金額をその日の為替レートで円にして足す
@@ -107,7 +108,7 @@ Python 3.10・3.12・3.14 で確かめました（Streamlit 1.65〜1.67）。
 
 AI駆動開発ギルドの作品づくり「家計簿アプリをつくる」のスターターです。「家計簿アプリの土台をつくる」（ダンジョン 1〜3）と、その続きの「データと外部連携」（ダンジョン 1・2）・「チームの開発の型」（ダンジョン 1〜5）のタグがあります。
 ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
-main と `team-02-done`（チームの開発の型 ダンジョン 2 の完成形）は同じ中身です。
+main と `team-03-done`（チームの開発の型 ダンジョン 3 の完成形）は同じ中身です。
 
 ### タグの一覧
 
@@ -121,6 +122,7 @@ main と `team-02-done`（チームの開発の型 ダンジョン 2 の完成�
 | `data-02-done` | データと外部連携 ダンジョン 2 の完成形（外貨を円にして保存・祝日の印） | 上に加えて rates.py・holidays.py。requirements.txt に requests |
 | `team-01-done` | チームの開発の型 ダンジョン 1 の完成形（作るものを言葉にする） | 上に加えて SPEC.md・AGENTS.md・summary.py（合計の計算を app.py から分けた） |
 | `team-02-done` | チームの開発の型 ダンジョン 2 の完成形（一覧を新しい日付順に） | storage.py の load_records が新しい日付順（同じ日付はあとから入れた行が上） |
+| `team-03-done` | チームの開発の型 ダンジョン 3 の完成形（月で絞り込む） | summary.py に months・in_month。画面に「月」の選択 |
 
 ### 始めるダンジョンと使うタグ
 
@@ -133,6 +135,7 @@ main と `team-02-done`（チームの開発の型 ダンジョン 2 の完成�
 | データと外部連携 ダンジョン 2「外の API からデータを取る」 | `data-01-done` |
 | チームの開発の型 ダンジョン 1「作るものを言葉にする」 | `data-02-done` |
 | チームの開発の型 ダンジョン 2「Issue から始めて PR で閉じる」 | `team-01-done` |
+| チームの開発の型 ダンジョン 3「小さな Issue で直し続ける」 | `team-02-done` |
 
 ### 途中から入る
 
@@ -170,5 +173,6 @@ Git を使わずに取るなら、GitHub の画面でタグを選び、Code → 
 - データと外部連携 ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/data-01-done...data-02-done
 - チームの開発の型 ダンジョン 1: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/data-02-done...team-01-done
 - チームの開発の型 ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-01-done...team-02-done
+- チームの開発の型 ダンジョン 3: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-02-done...team-03-done
 
 完成形はひとつの答えの例です。自分のコードが違っていても、ダンジョンのクリア条件を満たしていれば大丈夫です。

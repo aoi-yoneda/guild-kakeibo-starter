@@ -192,3 +192,15 @@ def test_failed_holiday_year_is_not_called_again_but_this_month_is_shown(monkeyp
     assert at.caption[-1].value == "今月の祝日: なし"
     add(at, "支出", 300, "コーヒー")
     assert calls.count(2015) == 1
+
+
+def test_month_filter_narrows_totals_and_list():
+    add_sample()
+    storage.add_record("2026-10-31", "支出", 500, "本")
+    at = run_app()
+    assert at.selectbox(key="month").options == ["すべて", "2026-11", "2026-10"]
+    assert metrics(at)["支出"] == "5,500 円"
+    at.selectbox(key="month").set_value("2026-10").run()
+    assert not at.exception
+    assert metrics(at) == {"収入": "0 円", "支出": "500 円", "残高": "-500 円"}
+    assert at.dataframe[0].value["メモ"].tolist() == ["本"]
