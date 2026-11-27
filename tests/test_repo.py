@@ -23,3 +23,10 @@ def test_sample_csv_is_imported_into_new_db(csv_path):
     records = storage.load_records()
     assert len(records) == 3
     assert [r["金額"] for r in records] == [200000, 1200, 3800]
+
+
+def test_agents_md_is_short_and_names_the_rules():
+    text = (ROOT / "AGENTS.md").read_text(encoding="utf-8")
+    assert len(text.splitlines()) <= 40
+    for rule in ["storage.py", "python -m pytest", "kakeibo.db"]:
+        assert rule in text

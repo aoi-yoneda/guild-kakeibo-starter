@@ -5,17 +5,7 @@ import streamlit as st
 import holidays
 import rates
 import storage
-
-
-def summarize(records):
-    income = 0
-    expense = 0
-    for r in records:
-        if r["区分"] == "収入":
-            income += r["金額"]
-        else:
-            expense += r["金額"]
-    return income, expense, income - expense
+from summary import summarize
 
 
 # 同じ通貨・日付なら 1 時間は呼び直さない（失敗したときは覚えないので、次にまた呼ぶ）
