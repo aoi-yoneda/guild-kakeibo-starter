@@ -15,6 +15,7 @@
 ## データ
 
 - kakeibo.db（SQLite）の records 表。列は id・date・kind・amount・memo・category
+- メモは入力欄で 100 字まで（外貨の行は注記の分だけ長くなる）
 - 金額は 1 円以上の整数。支出も正の数で入れ、区分で引く
 - kakeibo.db は本物のお金の記録なので、GitHub に上げない
 

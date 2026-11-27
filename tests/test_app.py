@@ -204,3 +204,11 @@ def test_month_filter_narrows_totals_and_list():
     assert not at.exception
     assert metrics(at) == {"収入": "0 円", "支出": "500 円", "残高": "-500 円"}
     assert at.dataframe[0].value["メモ"].tolist() == ["本"]
+
+
+def test_memo_inputs_stop_at_100_characters():
+    add_sample()
+    at = run_app()
+    for key in [None, "f_memo", "m3"]:
+        box = at.text_input[0] if key is None else at.text_input(key=key)
+        assert box.max_chars == storage.MEMO_MAX == 100

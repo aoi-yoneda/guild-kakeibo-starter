@@ -30,3 +30,9 @@ def test_agents_md_is_short_and_names_the_rules():
     assert len(text.splitlines()) <= 40
     for rule in ["storage.py", "python -m pytest", "kakeibo.db"]:
         assert rule in text
+
+
+def test_review_md_lists_the_checks():
+    text = (ROOT / "REVIEW.md").read_text(encoding="utf-8")
+    for word in ["符号", "?", "kakeibo.db", "API", "pytest"]:
+        assert word in text

@@ -39,7 +39,7 @@ with st.form("entry"):
     with col3:
         amount = st.number_input("金額（円）", min_value=1, step=1)
     with col4:
-        memo = st.text_input("メモ")
+        memo = st.text_input("メモ", max_chars=storage.MEMO_MAX)
     category = st.selectbox("カテゴリ", storage.CATEGORIES)
     submitted = st.form_submit_button("追加")
 
@@ -59,7 +59,7 @@ with st.expander("外貨の支出を入れる（円にして保存）"):
                 "金額（外貨）", min_value=0.01, value=10.00, step=0.01, format="%.2f", key="f_amount"
             )
         with col4:
-            f_memo = st.text_input("メモ", key="f_memo")
+            f_memo = st.text_input("メモ", max_chars=storage.MEMO_MAX, key="f_memo")
         f_category = st.selectbox("カテゴリ", storage.CATEGORIES, key="f_category")
         f_submitted = st.form_submit_button("円にして追加")
 
@@ -94,7 +94,10 @@ if records:
         new_amount = st.number_input(
             "金額（円）", min_value=1, step=1, value=row["金額"], key=f"a{target}"
         )
-        new_memo = st.text_input("メモ", row["メモ"], key=f"m{target}")
+        # 外貨の行は注記の分だけ 100 字を超えることがある。今のメモを切らずに直せる長さにする
+        new_memo = st.text_input(
+            "メモ", row["メモ"], max_chars=max(storage.MEMO_MAX, len(row["メモ"])), key=f"m{target}"
+        )
         cats = storage.CATEGORIES
         new_category = st.selectbox(
             "カテゴリ", cats, index=cats.index(row["カテゴリ"]) if row["カテゴリ"] in cats else 0,

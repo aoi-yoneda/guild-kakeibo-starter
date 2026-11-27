@@ -33,6 +33,7 @@ Windows で `streamlit run app.py` が止められるときは、代わりに `p
 
 - 日付・区分（収入・支出）・金額・メモ・カテゴリを入れて「追加」で一覧に足す
 - 収入・支出・残高の合計を出す
+- メモは 100 字まで（外貨の行は、そのあとに元の金額とレートの注記が付く）
 - 「月」を選ぶと、合計と一覧がその月だけになる（「すべて」で全部）
 - 一覧は新しい日付が上（同じ日付なら、あとから入れた行が上）
 - 「直す・消す」で、id を選んだ 1 行だけを直す・消す
@@ -78,7 +79,7 @@ cp sample.csv kakeibo.csv   # Mac
 
 ## 作るときの決まり
 
-何を作るかは SPEC.md、AI に作業を頼むときの決まり（SQL は storage.py だけ・確かめ方は `python -m pytest`・kakeibo.db は上げない など）は AGENTS.md に書いています。
+何を作るかは SPEC.md、AI に作業を頼むときの決まり（SQL は storage.py だけ・確かめ方は `python -m pytest`・kakeibo.db は上げない など）は AGENTS.md、マージの前に見る観点は REVIEW.md に書いています。
 
 ## 確かめ方
 
@@ -108,7 +109,7 @@ Python 3.10・3.12・3.14 で確かめました（Streamlit 1.65〜1.67）。
 
 AI駆動開発ギルドの作品づくり「家計簿アプリをつくる」のスターターです。「家計簿アプリの土台をつくる」（ダンジョン 1〜3）と、その続きの「データと外部連携」（ダンジョン 1・2）・「チームの開発の型」（ダンジョン 1〜5）のタグがあります。
 ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
-main と `team-03-done`（チームの開発の型 ダンジョン 3 の完成形）は同じ中身です。
+main と `team-04-done`（チームの開発の型 ダンジョン 4 の完成形）は同じ中身です。
 
 ### タグの一覧
 
@@ -123,6 +124,7 @@ main と `team-03-done`（チームの開発の型 ダンジョン 3 の完成�
 | `team-01-done` | チームの開発の型 ダンジョン 1 の完成形（作るものを言葉にする） | 上に加えて SPEC.md・AGENTS.md・summary.py（合計の計算を app.py から分けた） |
 | `team-02-done` | チームの開発の型 ダンジョン 2 の完成形（一覧を新しい日付順に） | storage.py の load_records が新しい日付順（同じ日付はあとから入れた行が上） |
 | `team-03-done` | チームの開発の型 ダンジョン 3 の完成形（月で絞り込む） | summary.py に months・in_month。画面に「月」の選択 |
+| `team-04-done` | チームの開発の型 ダンジョン 4 の完成形（メモは 100 字まで） | 上に加えて REVIEW.md（マージ前に見る観点）。メモの入力欄が 100 字まで |
 
 ### 始めるダンジョンと使うタグ
 
@@ -136,6 +138,7 @@ main と `team-03-done`（チームの開発の型 ダンジョン 3 の完成�
 | チームの開発の型 ダンジョン 1「作るものを言葉にする」 | `data-02-done` |
 | チームの開発の型 ダンジョン 2「Issue から始めて PR で閉じる」 | `team-01-done` |
 | チームの開発の型 ダンジョン 3「小さな Issue で直し続ける」 | `team-02-done` |
+| チームの開発の型 ダンジョン 4「マージの前に見る習慣」 | `team-03-done` |
 
 ### 途中から入る
 
@@ -174,5 +177,6 @@ Git を使わずに取るなら、GitHub の画面でタグを選び、Code → 
 - チームの開発の型 ダンジョン 1: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/data-02-done...team-01-done
 - チームの開発の型 ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-01-done...team-02-done
 - チームの開発の型 ダンジョン 3: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-02-done...team-03-done
+- チームの開発の型 ダンジョン 4: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-03-done...team-04-done
 
 完成形はひとつの答えの例です。自分のコードが違っていても、ダンジョンのクリア条件を満たしていれば大丈夫です。
