@@ -7,6 +7,8 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 PATH = HERE / "kakeibo.db"
 CSV_PATH = HERE / "kakeibo.csv"
+# 入力欄で打てるメモの長さ。外貨の行は、このあとに元の金額とレートの注記が付く
+MEMO_MAX = 100
 CATEGORIES = ["未分類", "食費", "日用品", "交通", "住まい", "給料", "その他"]
 
 
@@ -81,8 +83,10 @@ def _import_csv(conn):
 
 def load_records():
     with _connect() as conn:
+        # 新しい日付が上。同じ日付なら、あとから入れた行が上
         rows = conn.execute(
-            "SELECT id, date, kind, amount, memo, category FROM records ORDER BY date, id"
+            "SELECT id, date, kind, amount, memo, category FROM records"
+            " ORDER BY date DESC, id DESC"
         ).fetchall()
     return [
         {"id": r[0], "日付": r[1], "区分": r[2], "金額": r[3], "メモ": r[4], "カテゴリ": r[5]}

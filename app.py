@@ -5,17 +5,7 @@ import streamlit as st
 import holidays
 import rates
 import storage
-
-
-def summarize(records):
-    income = 0
-    expense = 0
-    for r in records:
-        if r["区分"] == "収入":
-            income += r["金額"]
-        else:
-            expense += r["金額"]
-    return income, expense, income - expense
+from summary import in_month, months, summarize
 
 
 # 同じ通貨・日付なら 1 時間は呼び直さない（失敗したときは覚えないので、次にまた呼ぶ）
@@ -29,7 +19,8 @@ def cached_holidays(year):
     return holidays.fetch_holidays(year)
 
 
-st.title("家計簿")
+# 見出しには全体の残高を出す。残高は収支を読んだあとで分かるので、場所だけ先に取っておく
+heading = st.empty()
 st.write("収支を入れて、一覧と合計で見るアプリです")
 
 # kakeibo.db が無ければ作る（kakeibo.csv があれば、そのときだけ取り込む）
@@ -49,7 +40,7 @@ with st.form("entry"):
     with col3:
         amount = st.number_input("金額（円）", min_value=1, step=1)
     with col4:
-        memo = st.text_input("メモ")
+        memo = st.text_input("メモ", max_chars=storage.MEMO_MAX)
     category = st.selectbox("カテゴリ", storage.CATEGORIES)
     submitted = st.form_submit_button("追加")
 
@@ -69,7 +60,7 @@ with st.expander("外貨の支出を入れる（円にして保存）"):
                 "金額（外貨）", min_value=0.01, value=10.00, step=0.01, format="%.2f", key="f_amount"
             )
         with col4:
-            f_memo = st.text_input("メモ", key="f_memo")
+            f_memo = st.text_input("メモ", max_chars=storage.MEMO_MAX, key="f_memo")
         f_category = st.selectbox("カテゴリ", storage.CATEGORIES, key="f_category")
         f_submitted = st.form_submit_button("円にして追加")
 
@@ -104,7 +95,10 @@ if records:
         new_amount = st.number_input(
             "金額（円）", min_value=1, step=1, value=row["金額"], key=f"a{target}"
         )
-        new_memo = st.text_input("メモ", row["メモ"], key=f"m{target}")
+        # 外貨の行は注記の分だけ 100 字を超えることがある。今のメモを切らずに直せる長さにする
+        new_memo = st.text_input(
+            "メモ", row["メモ"], max_chars=max(storage.MEMO_MAX, len(row["メモ"])), key=f"m{target}"
+        )
         cats = storage.CATEGORIES
         new_category = st.selectbox(
             "カテゴリ", cats, index=cats.index(row["カテゴリ"]) if row["カテゴリ"] in cats else 0,
@@ -131,7 +125,12 @@ if records:
 else:
     st.caption("まだ収支がありません")
 
-income, expense, balance = summarize(records)
+heading.title(f"うちの家計簿（残高 {summarize(records)[2]:,} 円）")
+
+# 月で絞ると、合計と一覧の両方がその月だけになる
+month = st.selectbox("月", ["すべて"] + months(records), key="month")
+shown = records if month == "すべて" else in_month(records, month)
+income, expense, balance = summarize(shown)
 
 col1, col2, col3 = st.columns(3)
 col1.metric("収入", f"{income:,} 円")
@@ -165,4 +164,4 @@ if got_this_year:
         )
     else:
         st.caption("今月の祝日: なし")
-st.dataframe([dict(r, 祝日=holidays.mark(r["日付"], holiday_names)) for r in records])
+st.dataframe([dict(r, 祝日=holidays.mark(r["日付"], holiday_names)) for r in shown])

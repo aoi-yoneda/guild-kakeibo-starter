@@ -25,14 +25,17 @@ streamlit run app.py
 ```
 
 初めて起動すると、ターミナルで Email を聞かれます。空のまま Enter を押せば進みます。
-ブラウザで http://localhost:8501 が開き、「家計簿」の画面が出ます。止めるときはターミナルで Ctrl + C。
+ブラウザで http://localhost:8501 が開き、「うちの家計簿」の画面が出ます。止めるときはターミナルで Ctrl + C。
 Windows で `.venv\Scripts\activate` が「スクリプトの実行が無効」で止まるときは、`Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` を 1 回打ってからやり直します。
 Windows で `streamlit run app.py` が止められるときは、代わりに `python -m streamlit run app.py` で起動します。
 
 ## できること
 
 - 日付・区分（収入・支出）・金額・メモ・カテゴリを入れて「追加」で一覧に足す
-- 収入・支出・残高の合計を出す
+- 収入・支出・残高の合計を出す。見出しには全体の残高を出す
+- メモは 100 字まで（外貨の行は、そのあとに元の金額とレートの注記が付く）
+- 「月」を選ぶと、合計と一覧がその月だけになる（「すべて」で全部）
+- 一覧は新しい日付が上（同じ日付なら、あとから入れた行が上）
 - 「直す・消す」で、id を選んだ 1 行だけを直す・消す
 - 「外貨の支出を入れる」で、ドルなどの金額をその日の為替レートで円にして足す
 - 一覧の日付に祝日の印を付け、今月の祝日を出す
@@ -74,6 +77,10 @@ cp sample.csv kakeibo.csv   # Mac
 - 祝日を取れなかった年は、画面を開いている間は呼び直しません。起動し直すと、もう一度試します
 - 為替の返事が思っていた形でないとき（リストの中に rate が無いなど）の備えは、まだ入れていません。品質とリファクタのトラック（品質のダンジョン 4）で、偽物の通信を使うテストと一緒に足します
 
+## 作るときの決まり
+
+何を作るかは SPEC.md、AI に作業を頼むときの決まり（SQL は storage.py だけ・確かめ方は `python -m pytest`・kakeibo.db は上げない など）は AGENTS.md、マージの前に見る観点は REVIEW.md、版ごとの変更は CHANGELOG.md に書いています。
+
 ## 確かめ方
 
 1. 支出 1200 ランチ を追加する
@@ -100,9 +107,9 @@ Python 3.10・3.12・3.14 で確かめました（Streamlit 1.65〜1.67）。
 
 ## このリポジトリについて（ギルドのスターター）
 
-AI駆動開発ギルドの作品づくり「家計簿アプリをつくる」のスターターです。「家計簿アプリの土台をつくる」（ダンジョン 1〜3）と、「データと外部連携」の家計簿の続き（ダンジョン 1・2）のタグがあります。
+AI駆動開発ギルドの作品づくり「家計簿アプリをつくる」のスターターです。「家計簿アプリの土台をつくる」（ダンジョン 1〜3）と、その続きの「データと外部連携」（ダンジョン 1・2）・「チームの開発の型」（ダンジョン 1〜5）のタグがあります。
 ダンジョンの区切りごとにタグを置いているので、どのダンジョンからでも始められます。
-main と `data-02-done`（データと外部連携 ダンジョン 2 の完成形）は同じ中身です。
+main と `team-05-done`（チームの開発の型 ダンジョン 5 の完成形）は同じ中身です。
 
 ### タグの一覧
 
@@ -114,6 +121,11 @@ main と `data-02-done`（データと外部連携 ダンジョン 2 の完成�
 | `kakeibo-base-03-done` | ダンジョン 3 の完成形（GitHub に上げる形） | 上に加えて requirements.txt・.gitignore・sample.csv |
 | `data-01-done` | データと外部連携 ダンジョン 1 の完成形（保存先を SQLite に。追加・一覧・直す・消す・カテゴリ） | storage.py が SQLite（kakeibo.db の records 表）。.gitignore に kakeibo.db |
 | `data-02-done` | データと外部連携 ダンジョン 2 の完成形（外貨を円にして保存・祝日の印） | 上に加えて rates.py・holidays.py。requirements.txt に requests |
+| `team-01-done` | チームの開発の型 ダンジョン 1 の完成形（作るものを言葉にする） | 上に加えて SPEC.md・AGENTS.md・summary.py（合計の計算を app.py から分けた） |
+| `team-02-done` | チームの開発の型 ダンジョン 2 の完成形（一覧を新しい日付順に） | storage.py の load_records が新しい日付順（同じ日付はあとから入れた行が上） |
+| `team-03-done` | チームの開発の型 ダンジョン 3 の完成形（月で絞り込む） | summary.py に months・in_month。画面に「月」の選択 |
+| `team-04-done` | チームの開発の型 ダンジョン 4 の完成形（メモは 100 字まで） | 上に加えて REVIEW.md（マージ前に見る観点）。メモの入力欄が 100 字まで |
+| `team-05-done` | チームの開発の型 ダンジョン 5 の完成形（見出しに残高・v0.1.0 の区切り） | 上に加えて CHANGELOG.md。見出しが「うちの家計簿（残高 …円）」 |
 
 ### 始めるダンジョンと使うタグ
 
@@ -124,6 +136,11 @@ main と `data-02-done`（データと外部連携 ダンジョン 2 の完成�
 | ダンジョン 3「家計簿を GitHub に上げる」 | `kakeibo-base-02-done` |
 | データと外部連携 ダンジョン 1「データを残す SQLite と CRUD」 | `kakeibo-base-03-done` |
 | データと外部連携 ダンジョン 2「外の API からデータを取る」 | `data-01-done` |
+| チームの開発の型 ダンジョン 1「作るものを言葉にする」 | `data-02-done` |
+| チームの開発の型 ダンジョン 2「Issue から始めて PR で閉じる」 | `team-01-done` |
+| チームの開発の型 ダンジョン 3「小さな Issue で直し続ける」 | `team-02-done` |
+| チームの開発の型 ダンジョン 4「マージの前に見る習慣」 | `team-03-done` |
+| チームの開発の型 ダンジョン 5「ぶつかっても進める」 | `team-04-done` |
 
 ### 途中から入る
 
@@ -147,7 +164,7 @@ rm -rf .git
 
 clone のときに `detached HEAD` の長い注意が出ますが、タグを取り出したときのいつもの表示なので気にしなくて大丈夫です。
 `.git` を消すのは、このフォルダを自分の家計簿として育てるためです。消さないと、ダンジョン 3 で `git push` したときの上げ先がこのスターターのままになります。
-データと外部連携から入るときは、clone したフォルダを自分の GitHub の空のリポジトリ kakeibo に上げてから始めます（上げ方は「家計簿アプリの土台をつくる」のダンジョン 3）。
+データと外部連携・チームの開発の型から入るときは、clone したフォルダを自分の GitHub の空のリポジトリ kakeibo に上げてから始めます（上げ方は「家計簿アプリの土台をつくる」のダンジョン 3）。
 Git を使わずに取るなら、GitHub の画面でタグを選び、Code → Download ZIP でも同じものが手に入ります。
 
 ### 自分のコードと比べる
@@ -159,5 +176,10 @@ Git を使わずに取るなら、GitHub の画面でタグを選び、Code → 
 - ダンジョン 3: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/kakeibo-base-02-done...kakeibo-base-03-done
 - データと外部連携 ダンジョン 1: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/kakeibo-base-03-done...data-01-done
 - データと外部連携 ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/data-01-done...data-02-done
+- チームの開発の型 ダンジョン 1: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/data-02-done...team-01-done
+- チームの開発の型 ダンジョン 2: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-01-done...team-02-done
+- チームの開発の型 ダンジョン 3: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-02-done...team-03-done
+- チームの開発の型 ダンジョン 4: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-03-done...team-04-done
+- チームの開発の型 ダンジョン 5: https://github.com/aoi-yoneda/guild-kakeibo-starter/compare/team-04-done...team-05-done
 
 完成形はひとつの答えの例です。自分のコードが違っていても、ダンジョンのクリア条件を満たしていれば大丈夫です。
