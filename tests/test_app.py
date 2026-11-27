@@ -75,8 +75,9 @@ def test_added_rows_survive_restart():
     again = run_app()
     assert metrics(again) == {"収入": "3,000 円", "支出": "1,200 円", "残高": "1,800 円"}
     df = again.dataframe[0].value
-    assert df["メモ"].tolist() == ["ランチ", "フリマ"]
-    assert df["金額"].tolist() == [1200, 3000]
+    # 同じ日付なら、あとから入れた行が上
+    assert df["メモ"].tolist() == ["フリマ", "ランチ"]
+    assert df["金額"].tolist() == [3000, 1200]
 
 
 def test_edit_changes_only_the_chosen_row():
@@ -87,7 +88,7 @@ def test_edit_changes_only_the_chosen_row():
     edit_button(at, "直す").click().run()
     assert not at.exception
     assert metrics(at) == {"収入": "200,000 円", "支出": "5,300 円", "残高": "194,700 円"}
-    assert [r["金額"] for r in storage.load_records()] == [200000, 1500, 3800]
+    assert [r["金額"] for r in storage.load_records()] == [3800, 1500, 200000]
 
 
 def test_delete_removes_only_the_chosen_row():
@@ -96,7 +97,7 @@ def test_delete_removes_only_the_chosen_row():
     at.selectbox(key="target").set_value(3).run()
     edit_button(at, "消す").click().run()
     assert not at.exception
-    assert [r["メモ"] for r in storage.load_records()] == ["給料", "ランチ"]
+    assert [r["メモ"] for r in storage.load_records()] == ["ランチ", "給料"]
     assert metrics(at) == {"収入": "200,000 円", "支出": "1,200 円", "残高": "198,800 円"}
 
 
@@ -157,7 +158,7 @@ def test_holidays_are_marked_in_the_list(monkeypatch):
     storage.add_record("2026-11-24", "支出", 300, "コーヒー")
     at = run_app()
     assert not at.warning
-    assert at.dataframe[0].value["祝日"].tolist() == ["勤労感謝の日", ""]
+    assert at.dataframe[0].value["祝日"].tolist() == ["", "勤労感謝の日"]
 
 
 def test_amount_below_one_yen_is_not_saved_and_edit_still_opens(monkeypatch):

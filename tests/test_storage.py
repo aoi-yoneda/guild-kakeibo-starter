@@ -38,9 +38,19 @@ def test_init_twice_keeps_rows():
 def test_add_then_load_keeps_number_amounts_and_default_category():
     add_sample()
     loaded = storage.load_records()
-    assert without_id(loaded) == [dict(r, カテゴリ="未分類") for r in SAMPLE]
+    assert without_id(loaded) == [dict(r, カテゴリ="未分類") for r in reversed(SAMPLE)]
     assert all(isinstance(r["金額"], int) for r in loaded)
-    assert [r["id"] for r in loaded] == [1, 2, 3]
+    assert [r["id"] for r in loaded] == [3, 2, 1]
+
+
+def test_newest_date_comes_first_and_same_day_keeps_entry_order_reversed():
+    storage.init_db()
+    storage.add_record("2026-11-21", "支出", 1200, "ランチ")
+    storage.add_record("2026-11-25", "支出", 500, "コーヒー")
+    storage.add_record("2026-11-03", "収入", 3000, "フリマ")
+    storage.add_record("2026-11-21", "支出", 300, "おやつ")
+    memos = [r["メモ"] for r in storage.load_records()]
+    assert memos == ["コーヒー", "おやつ", "ランチ", "フリマ"]
 
 
 def test_quote_in_memo_is_saved_as_is():
@@ -54,14 +64,14 @@ def test_update_changes_only_one_row():
     assert storage.count_by_id(2) == 1
     assert storage.update_record(2, "2026-11-21", "支出", 1500, "ランチ", "食費") == 1
     records = storage.load_records()
-    assert [r["金額"] for r in records] == [200000, 1500, 3800]
+    assert [r["金額"] for r in records] == [3800, 1500, 200000]
     assert [r["カテゴリ"] for r in records] == ["未分類", "食費", "未分類"]
 
 
 def test_delete_removes_only_one_row():
     add_sample()
     assert storage.delete_record(3) == 1
-    assert [r["メモ"] for r in storage.load_records()] == ["給料", "ランチ"]
+    assert [r["メモ"] for r in storage.load_records()] == ["ランチ", "給料"]
 
 
 def test_missing_id_counts_zero_and_changes_nothing():
@@ -77,7 +87,7 @@ def test_csv_is_imported_only_when_db_is_new(csv_path):
         encoding="utf-8",
     )
     storage.init_db()
-    assert [r["メモ"] for r in storage.load_records()] == ["給料", "ランチ"]
+    assert [r["メモ"] for r in storage.load_records()] == ["ランチ", "給料"]
 
     # 起動し直しても、また取り込まない
     storage.init_db()
@@ -107,7 +117,7 @@ def test_old_table_gets_category_column_with_default(db_path):
     assert records[0]["メモ"] == "ランチ"
     assert records[0]["カテゴリ"] == "未分類"
     storage.add_record("2026-11-22", "支出", 3800, "日用品", "日用品")
-    assert [r["カテゴリ"] for r in storage.load_records()] == ["未分類", "日用品"]
+    assert [r["カテゴリ"] for r in storage.load_records()] == ["日用品", "未分類"]
 
 
 def test_csv_saved_with_bom_is_imported(csv_path):
@@ -133,7 +143,7 @@ def test_broken_csv_leaves_no_db_and_can_be_retried(db_path, csv_path):
         encoding="utf-8",
     )
     storage.init_db()
-    assert [r["金額"] for r in storage.load_records()] == [200000, 1000]
+    assert [r["金額"] for r in storage.load_records()] == [1000, 200000]
 
 
 def test_shift_jis_csv_stops_without_leaving_db(db_path, csv_path):

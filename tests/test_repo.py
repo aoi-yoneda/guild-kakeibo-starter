@@ -22,7 +22,7 @@ def test_sample_csv_is_imported_into_new_db(csv_path):
     storage.init_db()
     records = storage.load_records()
     assert len(records) == 3
-    assert [r["金額"] for r in records] == [200000, 1200, 3800]
+    assert [r["金額"] for r in records] == [3800, 1200, 200000]
 
 
 def test_agents_md_is_short_and_names_the_rules():
